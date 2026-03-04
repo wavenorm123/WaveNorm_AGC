@@ -39,7 +39,7 @@ The goal of this project is to benchmark and compare different AGC systems acros
 
 ---
 
-### 2️⃣ TIMIT Speech Corpus
+### TIMIT Speech Corpus
 - Phonetically balanced speech dataset
 - 630 speakers from 8 major dialect regions
 - Clean speech recordings
@@ -47,7 +47,7 @@ The goal of this project is to benchmark and compare different AGC systems acros
 
 ---
 
-### 3️⃣ Voicebank Dataset
+### Voicebank Dataset
 - Noisy speech dataset
 - Used in speech enhancement research
 - Contains paired clean and noisy speech samples
@@ -55,19 +55,19 @@ The goal of this project is to benchmark and compare different AGC systems acros
 
 ---
 
-## ⚙️ Evaluated Systems
+## Evaluated Systems
 
-### 🎚️ WebRTC AGC
+### WebRTC AGC
 - Open-source AGC from WebRTC framework
 - Widely used in VoIP and conferencing applications
 - Real-time capable
 
-### 🎚️ Carnival AGC
+### Carnival AGC
 - Proprietary AGC implementation
 - Adaptive dynamic gain control
 - Optimized for speech clarity
 
-### 🎚️ WaveNorm AGC
+### WaveNorm AGC
 - Waveform-based normalization AGC
 - Designed for consistent loudness output
 - Lightweight implementation
