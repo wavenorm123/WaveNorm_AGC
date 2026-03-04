@@ -10,7 +10,7 @@ This repository presents a comparative evaluation of three Automatic Gain Contro
 
 The evaluation is performed on:
 
-- In-house generated speech dataset  
+- Internal Dataset speech dataset  
 - TIMIT Speech Corpus  
 - Voicebank+Demand Dataset  
 
@@ -30,7 +30,7 @@ The goal of this project is to benchmark and compare different AGC systems acros
 
 ##  Datasets
 
-### In-House Dataset
+### Internal dataset
 - Custom recorded speech samples
 - Multiple speakers (male/female)
 - Various SNR conditions
