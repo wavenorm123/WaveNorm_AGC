@@ -1,6 +1,6 @@
 # WaveNorm_AGC
 
-# 🎙️ Automatic Gain Control (AGC) Evaluation
+# Automatic Gain Control (AGC) Evaluation
 
 This repository presents a comparative evaluation of three Automatic Gain Control (AGC) systems:
 
@@ -16,7 +16,7 @@ The evaluation is performed on:
 
 ---
 
-## 📌 Objective
+## Objective
 
 The goal of this project is to benchmark and compare different AGC systems across controlled and real-world speech datasets, evaluating:
 
@@ -28,9 +28,9 @@ The goal of this project is to benchmark and compare different AGC systems acros
 
 ---
 
-## 📂 Datasets
+##  Datasets
 
-### 1️⃣ In-House Dataset
+### In-House Dataset
 - Custom recorded speech samples
 - Multiple speakers (male/female)
 - Various SNR conditions
