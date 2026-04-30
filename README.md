@@ -1,4 +1,5 @@
-# WaveNorm_AGC
+# WaveNorm_AGC 
+For demo [click here](https://wavenorm123.github.io/WaveNorm_AGC/)
 
 # Automatic Gain Control (AGC) Evaluation
 
