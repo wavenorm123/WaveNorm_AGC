@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Speech AGC Model Comparison</title>
+
+<div class="intro">
+  <h2>WaveNorm AGC</h2>
+
+  <p>
+    Adaptive Gain Control (AGC) is a technique designed to maintain consistent audio levels. In real-world recordings, speech amplitude often varies due to factors such as speaker distance, environmental conditions, and background noise. AGC compensates for these variations by automatically adjusting the signal gain, improving overall clarity and intelligibility.
+However, the performance of AGC methods varies significantly. Certain approaches may amplify background noise, introduce abrupt gain transitions, or distort the natural characteristics of speech.
+  </p>
+
+ 
+
+  <p>
+    This page presents a comparative analysis of multiple AGC systems, including the proposed
+    <strong>WaveNorm AGC</strong>, with a focus on their response to:
+  </p>
+
+    <ul>
+      <li><b>Speech</b>
+        <ul>
+          <li>Consistency of speech loudness</li>
+          <li>Impact under noisy conditions</li>
+          <li>Smoothness of gain transitions</li>
+        </ul>
+      </li>
+
+      <li><b>Non-Speech</b>
+        <ul>
+          <li>Behavior during silence or pauses</li>
+          <li>Background noise handling</li>
+        </ul>
+      </li>
+    </ul>
+
+  <p>
+    Each sample below contains the same audio processed by different AGC methods.
+    You can listen, compare, and visually inspect the waveform to understand how
+    each system behaves.
+  </p>
+</div>
+
+<style>
+body{
+  font-family: system-ui;
+  background:#f5f7fa;
+  padding:30px;
+  color:#222;
+}
+
+/* HEADER */
+h1{
+  font-size:22px;
+  margin-bottom:25px;
+}
+
+/* SECTION */
+.section{
+  margin-bottom:45px;
+}
+
+.sample-note{
+  font-size:13px;
+  color:#444;
+  margin-bottom:12px;
+  background:#f0f4ff;
+  padding:10px;
+  border-left:4px solid #2a6fdb;
+  border-radius:4px;
+}
+.sample-title{
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:15px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+/* CARD */
+.card{
+  background:#fff;
+  border:1px solid #ddd;
+  padding:12px;
+  border-radius:8px;
+}
+
+.label{
+  font-size:14px;
+  font-weight:600;
+  margin-bottom:8px;
+}
+
+/* CONTROLS */
+.ctrl{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+button{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:1px solid #ccc;
+  background:#fff;
+  cursor:pointer;
+}
+
+.time{
+  font-size:11px;
+  font-family:monospace;
+}
+
+/* DOWNLOAD */
+.download{
+  font-size:12px;
+  text-decoration:none;
+  color:#2a6fdb;
+}
+
+/* CANVAS */
+canvas{
+  width:100%;
+  height:160px;
+  border:1px solid #ccc;
+  border-radius:4px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- </h1>Speech AGC Model Comparison</h1> -->
+<div id="root"></div>
+
+<script>
+
+const SAMPLES = [
+
+  {
+
+    id: "timit_MLLL0_SX193",
+
+    title: "Sample 1",
+
+    note: "This sample contains clean speech with pauses and silence between speech segments, where WaveNorm maintains consistent speech loudness while leaving the silence unchanged.",
+
+    dataset: "timit" 
+
+  },
+
+  {
+
+    id: 7,
+
+    title: "Sample 2",
+
+    note: "The sample includes speech at the start and end with a noisy middle segment (2.0–3.2s)...",
+
+    dataset: "internal"
+
+  },
+
+  {
+
+    id: 20,
+
+    title: "Sample 3",
+
+    note: "WaveNorm maintains consistent speech loudness...",
+
+    dataset: "internal"
+
+  },
+
+  {
+
+    id: 13,
+
+    title: "Sample 4",
+
+    note: "This sample includes continuous, mixed background noise...",
+
+    dataset: "internal"
+
+  },
+
+  {
+
+    id: 14,
+
+    title: "Sample 5",
+
+    note: "WaveNorm maintains speech loudness while reducing continuous background noise...",
+
+    dataset: "internal"
+
+  },
+
+  {
+
+    id: 15,
+
+    title: "Sample 6",
+
+    note: "WaveNorm maintains speech loudness while reducing mixed background noises...",
+
+    dataset: "internal"
+
+  }
+
+];
+ 
+const MODELS = [
+
+  {key:'input',label:'Input'},
+
+  {key:'webrtc',label:'WebRTC AGC'},
+
+  {key:'carnival',label:'Carnival AGC'},
+
+  {key:'wavenorm',label:'WaveNorm AGC'},
+
+];
+ 
+
+function filePath(sample, model){
+ 
+  if(sample.dataset === "timit"){
+
+    const id = sample.id;
+ 
+    if(model==='input') 
+
+      return `TIMIT/inputs/${id}.wav`;
+ 
+    if(model==='webrtc') 
+
+      return `TIMIT/outputs/WebRTC_AGC/${id}_webrtc_output.wav`;
+ 
+    if(model==='carnival') 
+
+      return `TIMIT/outputs/Carnival_AGC/${id}_carnival_output.wav`;
+ 
+    return `TIMIT/outputs/WaveNorm_AGC/${id}_wavenorm_output.wav`;
+
+  }
+ 
+  const id = sample.id;
+ 
+  if(model==='input') 
+
+    return `Internal_dataset/inputs/int_utt_${id}_raw_input.wav`;
+ 
+  if(model==='webrtc') 
+
+    return `Internal_dataset/outputs/WebRTC_AGC/int_utt_${id}_webrtc_output.wav`;
+ 
+  if(model==='carnival') 
+
+    return `Internal_dataset/outputs/Carnival_AGC/int_utt_${id}_carnival_output.wav`;
+ 
+  return `Internal_dataset/outputs/WaveNorm_AGC/int_utt_${id}_wavenorm_output.wav`;
+
+}
+ 
+
+function fmt(s){
+  return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+}
+
+/* NORMALIZE */
+function normalize(data){
+  let peak = 0;
+  for(let i=0;i<data.length;i++){
+    peak = Math.max(peak, Math.abs(data[i]));
+  }
+  if(peak > 1){
+    for(let i=0;i<data.length;i++){
+      data[i] /= peak;
+    }
+  }
+}
+
+/* DRAW */
+function draw(canvas, data, sr, currentTime=0){
+
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth;
+  const H = 160;
+
+  canvas.width = W*dpr;
+  canvas.height = H*dpr;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const PAD={l:45,r:10,t:10,b:30};
+  const w=W-PAD.l-PAD.r;
+  const h=H-PAD.t-PAD.b;
+
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,W,H);
+
+  /* grid */
+  ctx.strokeStyle="#eee";
+  [-1,-0.5,0,0.5,1].forEach(v=>{
+    const y=PAD.t+h*(1-(v+1)/2);
+    ctx.beginPath();
+    ctx.moveTo(PAD.l,y);
+    ctx.lineTo(PAD.l+w,y);
+    ctx.stroke();
+  });
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(PAD.l, PAD.t, w, h);
+  ctx.clip();
+
+  const total=data.length;
+
+  for(let x=0;x<w;x++){
+    const i0=Math.floor(x/w*total);
+    const i1=Math.floor((x+1)/w*total);
+
+    let min=1,max=-1;
+
+    for(let i=i0;i<i1;i++){
+      let v = Math.max(-1, Math.min(1, data[i]));
+      if(v<min)min=v;
+      if(v>max)max=v;
+    }
+
+    const y1=PAD.t+h*(1-(max+1)/2);
+    const y2=PAD.t+h*(1-(min+1)/2);
+
+    ctx.fillStyle="#2a6fdb";
+    ctx.fillRect(PAD.l+x,y1,1,Math.max(1,y2-y1));
+  }
+
+  ctx.restore();
+
+  /* CURSOR (clean color) */
+  const duration = data.length/sr;
+  const cx = PAD.l + (currentTime/duration)*w;
+
+  ctx.strokeStyle="#fc03a9"; 
+  ctx.lineWidth=1.2;
+  ctx.beginPath();
+  ctx.moveTo(cx,PAD.t);
+  ctx.lineTo(cx,PAD.t+h);
+  ctx.stroke();
+
+  /* axes */
+  ctx.fillStyle="#555";
+  ctx.font="10px sans-serif";
+  ctx.textAlign="right";
+
+  [-1,-0.5,0,0.5,1].forEach(v=>{
+    const y=PAD.t+h*(1-(v+1)/2);
+    ctx.fillText(v.toFixed(1), PAD.l-5, y+3);
+  });
+
+  ctx.textAlign="center";
+  for(let i=0;i<=6;i++){
+    const x=PAD.l+w*i/6;
+    ctx.fillText((duration*i/6).toFixed(1), x, PAD.t+h+12);
+  }
+}
+
+/* PLAYER */
+async function createPlayer(src, canvas, timeEl, btn, downloadLink){
+
+  try{
+    const res = await fetch(src);
+    if(!res.ok) throw new Error();
+
+    const buf = await res.arrayBuffer();
+    const ctx = new AudioContext();
+    const audioBuf = await ctx.decodeAudioData(buf);
+
+    const data = audioBuf.getChannelData(0).slice();
+    normalize(data);
+
+    const sr = audioBuf.sampleRate;
+    const duration = audioBuf.duration;
+
+    downloadLink.href = src;
+
+    let source=null;
+    let startTime=0;
+    let pausedAt=0;
+    let playing=false;
+
+    function render(){
+      if(playing){
+        const t = ctx.currentTime - startTime;
+        draw(canvas,data,sr,t);
+        timeEl.textContent = `${fmt(t)} / ${fmt(duration)}`;
+        requestAnimationFrame(render);
+      }
+    }
+
+    function play(){
+      source = ctx.createBufferSource();
+      source.buffer = audioBuf;
+      source.connect(ctx.destination);
+      source.start(0, pausedAt);
+
+      startTime = ctx.currentTime - pausedAt;
+      playing = true;
+      render();
+
+      source.onended=()=>{
+        playing=false;
+        pausedAt=0;
+        btn.textContent="▶";
+      };
+    }
+    
+    
+    function pause(){
+      if(source) source.stop();
+      pausedAt = ctx.currentTime - startTime;
+      playing=false;
+    }
+
+    btn.onclick=()=>{
+      if(!playing){
+        play();
+        btn.textContent="⏸";
+      }else{
+        pause();
+        btn.textContent="▶";
+      }
+    };
+
+    /* SEEK CONTROL */
+    canvas.onclick = (e)=>{
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const ratio = x / rect.width;
+
+      pausedAt = ratio * duration;
+
+      if(playing){
+        pause();
+        play();
+      }else{
+        draw(canvas,data,sr,pausedAt);
+      }
+    };
+
+    draw(canvas,data,sr,0);
+    timeEl.textContent=`0:00 / ${fmt(duration)}`;
+
+  }catch(e){
+    timeEl.textContent="Audio not found";
+  }
+}
+
+/* BUILD */
+function build(){
+  const root=document.getElementById("root");
+
+  SAMPLES.forEach((s, idx)=>{
+
+    const section = document.createElement("div");
+    section.className="section";
+
+    const title = document.createElement("div");
+    title.className="sample-title";
+    title.textContent = s.title;
+    const note = document.createElement("div");
+    note.className = "sample-note";
+    note.textContent = s.note;
+
+    const grid=document.createElement("div");
+    grid.className="grid";
+
+    MODELS.forEach(m=>{
+
+      const src=filePath(s,m.key);
+
+      const card=document.createElement("div");
+      card.className="card";
+
+      const label=document.createElement("div");
+      label.className="label";
+      label.textContent=m.label;
+
+      const btn=document.createElement("button");
+      btn.textContent="▶";
+
+      const time=document.createElement("span");
+      time.className="time";
+
+      const download=document.createElement("a");
+      download.textContent="Download";
+      download.className="download";
+      download.setAttribute("download","");
+
+      const ctrl=document.createElement("div");
+      ctrl.className="ctrl";
+
+      const left=document.createElement("div");
+      left.className="left";
+      left.appendChild(btn);
+      left.appendChild(time);
+
+      ctrl.appendChild(left);
+      ctrl.appendChild(download);
+
+      const canvas=document.createElement("canvas");
+
+      card.appendChild(label);
+      card.appendChild(ctrl);
+      card.appendChild(canvas);
+
+      grid.appendChild(card);
+
+      createPlayer(src,canvas,time,btn,download);
+    });
+
+
+    section.appendChild(title);
+    section.appendChild(note);
+    section.appendChild(grid);
+    root.appendChild(section);
+  });
+}
+
+build();
+</script>
+
+</body>
+</html>
