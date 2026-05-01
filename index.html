@@ -163,7 +163,7 @@ const SAMPLES = [
 
     note: "This sample contains clean speech with pauses and silence between speech segments, where WaveNorm maintains consistent speech loudness while leaving the silence unchanged.",
 
-    dataset: "timit"   // 👈 mark dataset
+    dataset: "timit" 
 
   },
 
@@ -241,8 +241,6 @@ const MODELS = [
 
 ];
  
-/* ✅ SINGLE SMART PATH FUNCTION */
-
 function filePath(sample, model){
  
   // ---- TIMIT (Sample 0 only) ----
@@ -367,7 +365,7 @@ function draw(canvas, data, sr, currentTime=0){
   const duration = data.length/sr;
   const cx = PAD.l + (currentTime/duration)*w;
 
-  ctx.strokeStyle="#fc03a9";   // 👈 fixed (no clipping confusion)
+  ctx.strokeStyle="#fc03a9";  
   ctx.lineWidth=1.2;
   ctx.beginPath();
   ctx.moveTo(cx,PAD.t);
