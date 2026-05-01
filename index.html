@@ -5,31 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Speech AGC Model Comparison</title>
+
 <div class="intro">
   <h2>WaveNorm AGC</h2>
-  <p>
-    Adaptive Gain Control (AGC) is a technique used to keep audio loudness consistent.
-    In real recordings, speech can be too quiet, too loud, or vary over time depending
-    on distance, environment, and background noise. AGC automatically adjusts the volume
-    to make speech easier to hear.
-  </p>
 
   <p>
-    However, not all AGC methods behave the same way. Some may amplify background noise,
-    introduce sudden changes in loudness, or affect the natural quality of speech.
+    Adaptive Gain Control (AGC) is a technique designed to maintain consistent audio levels. In real-world recordings, speech amplitude often varies due to factors such as speaker distance, environmental conditions, and background noise. AGC compensates for these variations by automatically adjusting the signal gain, improving overall clarity and intelligibility.
+However, the performance of AGC methods varies significantly. Certain approaches may amplify background noise, introduce abrupt gain transitions, or distort the natural characteristics of speech.
   </p>
+
+ 
 
   <p>
-    This page compares different AGC approaches, including a proposed method called
-    <strong>WaveNorm AGC</strong>. The goal is to observe how each method handles:
+    This page presents a comparative analysis of multiple AGC systems, including the proposed
+    <strong>WaveNorm AGC</strong>, with a focus on their response to:
   </p>
 
-  <ul>
-    <li>Consistency of speech loudness</li>
-    <li>Behavior during silence or pauses</li>
-    <li>Background noise amplification</li>
-    <li>Smoothness of volume changes</li>
-  </ul>
+    <ul>
+      <li><b>Speech</b>
+        <ul>
+          <li>Consistency of speech loudness</li>
+          <li>Impact under noisy conditions</li>
+          <li>Smoothness of gain transitions</li>
+        </ul>
+      </li>
+
+      <li><b>Non-Speech</b>
+        <ul>
+          <li>Behavior during silence or pauses</li>
+          <li>Background noise handling</li>
+        </ul>
+      </li>
+    </ul>
 
   <p>
     Each sample below contains the same audio processed by different AGC methods.
@@ -145,48 +152,141 @@ canvas{
 <div id="root"></div>
 
 <script>
+
 const SAMPLES = [
+
   {
-    id: 7,
+
+    id: "timit_MLLL0_SX193",
+
     title: "Sample 1",
-    note: "The sample includes speech at the start and end with a noisy middle segment (2.0–3.2s), where WaveNorm reduces background noise and maintains smooth, consistent loudness compared to other AGC methods."
+
+    note: "This sample contains clean speech with pauses and silence between speech segments, where WaveNorm maintains consistent speech loudness while leaving the silence unchanged.",
+
+    dataset: "timit"   // 👈 mark dataset
+
   },
+
   {
-    id: 20,
+
+    id: 7,
+
     title: "Sample 2",
-    note: "WaveNorm maintains consistent speech loudness by balancing gain across speech segments,while reducing noise in non-speech regions (0–3s, 7.4–7.8s) and preserving the silent interval (6–7.4s) as true silence, unlike other models that amplify both speech and non-speech segments."
+
+    note: "The sample includes speech at the start and end with a noisy middle segment (2.0–3.2s)...",
+
+    dataset: "internal"
+
   },
+
   {
-    id: 13,
+
+    id: 20,
+
     title: "Sample 3",
-    note: "This sample includes continuous, mixed background noise, where WaveNorm preserves consistent speech loudness while effectively reducing the noise."
-    },
-  {
-    id: 14,
-    title: "Sample 4",
-    note: "WaveNorm maintains speech loudness while reducing continuous background noise in this sample."
+
+    note: "WaveNorm maintains consistent speech loudness...",
+
+    dataset: "internal"
+
   },
+
   {
-    id: 15,
+
+    id: 13,
+
+    title: "Sample 4",
+
+    note: "This sample includes continuous, mixed background noise...",
+
+    dataset: "internal"
+
+  },
+
+  {
+
+    id: 14,
+
     title: "Sample 5",
-    note: "WaveNorm maintains speech loudness while reducing mixed background noises in this sample.."
+
+    note: "WaveNorm maintains speech loudness while reducing continuous background noise...",
+
+    dataset: "internal"
+
+  },
+
+  {
+
+    id: 15,
+
+    title: "Sample 6",
+
+    note: "WaveNorm maintains speech loudness while reducing mixed background noises...",
+
+    dataset: "internal"
+
   }
-];
 
+];
+ 
 const MODELS = [
-  {key:'input',label:'Input'},
-  {key:'webrtc',label:'WebRTC AGC'},
-  {key:'carnival',label:'Carnival AGC'},
-  {key:'wavenorm',label:'WaveNorm AGC'},
-];
 
-/* PATH */
-function filePath(id, model){
-  if(model==='input') return `Internal_dataset/inputs/int_utt_${id}_raw_input.wav`;
-  if(model==='webrtc') return `Internal_dataset/outputs/WebRTC_AGC/int_utt_${id}_webrtc_output.wav`;
-  if(model==='carnival') return `Internal_dataset/outputs/Carnival_AGC/int_utt_${id}_carnival_output.wav`;
+  {key:'input',label:'Input'},
+
+  {key:'webrtc',label:'WebRTC AGC'},
+
+  {key:'carnival',label:'Carnival AGC'},
+
+  {key:'wavenorm',label:'WaveNorm AGC'},
+
+];
+ 
+/* ✅ SINGLE SMART PATH FUNCTION */
+
+function filePath(sample, model){
+ 
+  // ---- TIMIT (Sample 0 only) ----
+
+  if(sample.dataset === "timit"){
+
+    const id = sample.id;
+ 
+    if(model==='input') 
+
+      return `TIMIT/inputs/${id}.wav`;
+ 
+    if(model==='webrtc') 
+
+      return `TIMIT/outputs/WebRTC_AGC/${id}_webrtc_output.wav`;
+ 
+    if(model==='carnival') 
+
+      return `TIMIT/outputs/Carnival_AGC/${id}_carnival_output.wav`;
+ 
+    return `TIMIT/outputs/WaveNorm_AGC/${id}_wavenorm_output.wav`;
+
+  }
+ 
+  // ---- INTERNAL DATASET (others) ----
+
+  const id = sample.id;
+ 
+  if(model==='input') 
+
+    return `Internal_dataset/inputs/int_utt_${id}_raw_input.wav`;
+ 
+  if(model==='webrtc') 
+
+    return `Internal_dataset/outputs/WebRTC_AGC/int_utt_${id}_webrtc_output.wav`;
+ 
+  if(model==='carnival') 
+
+    return `Internal_dataset/outputs/Carnival_AGC/int_utt_${id}_carnival_output.wav`;
+ 
   return `Internal_dataset/outputs/WaveNorm_AGC/int_utt_${id}_wavenorm_output.wav`;
+
 }
+ 
 
 function fmt(s){
   return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
@@ -403,7 +503,7 @@ function build(){
 
     MODELS.forEach(m=>{
 
-      const src=filePath(s.id,m.key);
+      const src=filePath(s,m.key);
 
       const card=document.createElement("div");
       card.className="card";
